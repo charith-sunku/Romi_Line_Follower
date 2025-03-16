@@ -157,7 +157,26 @@ This task is the control system that ensures the Romi stays on the line during t
 3. State 2 - Idle state after system stops
 
 ### Dead Reckoning Task
-This task facilitates the movement through the non-line sections of the course. Each segment of the dead rechoning is preset based on experimentation. The different line segments of the pattern can be seen in the Annotated Game Track in the Project Objective section. 
-1. State 0 - Wait for IR calibration to complete. When `calibration` = 3, record the heading of the Romi using the IMU. This heading will serve as the reference angle for all future movements, essentially creating a 
+This task handles the robot’s navigation through regions where it must follow pre-planned routes and rotate to specific headings, rather than relying on line following. It uses both the **IMU** (for heading feedback) and **encoders** (for distance tracking) to achieve precise movements. If the robot encounters an obstacle, bump sensors trigger an override sequence that redirects the robot around the wall.
+
+**States**:
+1. **State 0** - Waits until IR calibration is finished (i.e., the `calibration` share is set to 3). Once calibration is confirmed, sets the IMU’s offset and moves to the next state.
+
+2. **State 1** - Checks if the robot’s encoders (`encL` and `encR`) have reached certain thresholds, indicating it’s time to switch from normal line following to dead reckoning. Once thresholds are met, `dr_mode` is set to start the dead reckoning sequence.
+
+3. **State 2** - Rotates the robot to the target heading specified in the `route_segments` array. Compares the current heading to the desired heading; if the error is outside the allowed tolerance, the robot turns left or right until aligned. On success, stops motors and transitions to straight driving.
+
+4. **State 3** - Drives forward a specified distance (tracked by encoders) while maintaining a heading lock. If the route segment is marked with `"bump"`, checks for collisions using bump sensors. Upon completing the distance, updates to the next route segment or triggers a bump override if a collision is detected.
+
+5. **State 10+**  
+   - Executes a multi-step sequence (reverse, rotate, drive, etc.) to navigate around a wall or obstacle. Each sub-state (1–8) handles a specific maneuver:
+     - **Reverse** for a short distance  
+     - **Rotate** to a specific heading (0°, -90°, 180°, etc.)  
+     - **Drive** forward for a set distance at that heading  
+     - Repeat until the full route around the obstacle is complete  
+   - Each sub-step uses encoders to measure distance and the IMU to confirm heading accuracy. Once finished, sets `system_done` to indicate the robot is done moving.
+
+6. **State 99** - Idle state after system stops
+
 ---
 
