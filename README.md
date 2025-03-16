@@ -1,6 +1,12 @@
 #  Romi Line-Following Robot
 **By Charith Sunku and Tomas Franco**
 
+## Table of Contents
+1. [Project Objective](#project-objective)
+2. [Hardware Elements](#hardware-elements)
+3. [Electro-Mechanical Design](#electro-mechanical-design)
+4. [Firmware Design](#firmware-design)
+
 ## Project Objective
 The objective of the Romi robot is to navigate the game track, hitting each checkpoint in sequence. Before returning to chekpoint 6, the robot must interact with the wall in some capacity to acknowledge the wall's presence. Our solution was to use a IR reflectance sensor to perform line following and a 9-DOF IMU to navigate through sections without trackable lines. 
 
@@ -25,7 +31,8 @@ The objective of the Romi robot is to navigate the game track, hitting each chec
 ## Electro-Mechanical Design:
 1. **Hardware Mounting**: All sensors and control boards were mounted on laser-cut acrylic plates, using standoffs to secure each component at the correct height and orientation. This custom acrylic approach provided a sturdy yet lightweight frame to house the IR sensor array, IMU, and bump sensors in stable positions around the chassis. By carefully aligning the cut-outs, wiring was neatly routed, reducing potential interference or accidental disconnections. The modular nature of acrylic plates and standoffs also simplifies maintenance and future upgrades, as sensors can be repositioned or swapped without heavily modifying the robot’s overall structure.
 2. **Electrical Wiring**: Power is supplied via a 6 × AA battery pack feeding a dedicated power distribution board. The motor drivers, NUCLEO microcontroller, and encoders all draw regulated voltage from this board, ensuring they receive stable, isolated power rails. This design isolates higher-current paths for the motors while providing a clean supply for sensitive components like sensors and the microcontroller, minimizing electrical noise and enhancing overall reliability. Below is a detailed wiring diagram highlighting the digital connections between the microcontroller and sensor peripherals.
-   
+
+![Romi Wiring Diagram](https://github.com/user-attachments/assets/9cdc2165-dc94-408c-babd-3128b9f02dd3)
 
 ## Firmware Design
 1. **Hardware Drivers**: Each hardware component—motors, sensors, encoders, and the IMU—is managed by a dedicated driver that encapsulates the microcontroller’s low-level specifics (pin assignments, registers, timers, etc.). By providing clear, high-level methods, these drivers hide the intricate setup details from the rest of the codebase. This approach keeps the system modular and maintainable: if hardware pins or peripherals change, only the corresponding driver needs updating, while the rest of the application remains unaffected. It also streamlines debugging and testing, because each component’s functionality can be verified in isolation without juggling microcontroller minutiae in every part of the project.
@@ -38,16 +45,3 @@ The objective of the Romi robot is to navigate the game track, hitting each chec
 
 ---
 
-## Optimizations
-
-- **PID Tuning**  
-  Early prototypes used basic proportional control. Adding integral terms significantly improved stability and reduced overshoot when line following. Derivative control was not applied as it led to unstable behavior. Additionally, IMU control only used proportional control as it was sufficient to keep the desired heading.   
-
-- **Line Sensor Calibration**  
-  During startup, the line sensor is placed over a dark patch and light patch to calibrate line sensor array. Each individual emitter/reciever pair is normalized to a range between 0 (light) and 1 (dark). This ensures any erroneous sensors still provide usable data.
-
-- **IMU Sensor Calibration**
-  IMU sensor was calibrated following the BNO055 sensor's datasheet instructions. Once the calibration coefficients were determined they were written to the IMU on startup.
-  
-- **Bump Handling**  
-  Interrupt-driven bump sensors allowing immediate response to wall impact
