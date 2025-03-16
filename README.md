@@ -115,8 +115,11 @@ This task is the control system that ensures the Romi stays on the line during t
 
 **States**: 
 1. State 0 - Waits for IR calibration to complete then initializes the `motor_controller` object.
-2. State 1 - 
+2. State 1 - Update Romi's heading using the IMU. If diamond has not passed, check if heading is ~90°. If it is, record encoder position and set the `diamond` flag. If Romi is in `diamond_mode` use IMU proportional control for a set amount of wheel rotations. If `diamond_mode` is not enabled, revert to PI control using the IR sensor.
+3. State 2 - Idle state after system stops
 
 ### Dead Reckoning Task
+This task facilitates the movement through the non-line sections of the course. Each segment of the dead rechoning is preset based on experimentation. The different line segments of the pattern can be seen in the Annotated Game Track in the Project Objective section. 
+1. State 0 - Wait for IR calibration to complete. When `calibration` = 3, record the heading of the Romi using the IMU. This heading will serve as the reference angle for all future movements, essentially creating a 
 ---
 
