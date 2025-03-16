@@ -6,6 +6,14 @@
 2. [Hardware Elements](#hardware-elements)
 3. [Electro-Mechanical Design](#electro-mechanical-design-overview)
 4. [Firmware Design](#firmware-design-overview)
+5. [Task Breakdown](#task-breakdown)
+   1. [Tasks and Shares](#tasks-and-shares)
+   2. [Finite State Machine Diagrams](#finite-state-machine-diagrams)
+   3. [User Interaction Task](#user-interaction-task)
+   4. [Actuation Task](#actuation-task)
+   5. [IR Task](#ir-task)
+   6. [Controller Task](#controller-task)
+   7. [Dead Reckoning Task](#dead-reckoning-task)
 
 ## Project Objective
 The objective of the Romi robot is to navigate the game track, hitting each checkpoint in sequence. Before returning to chekpoint 6, the robot must interact with the wall in some capacity to acknowledge the wall's presence. Our solution was to use a IR reflectance sensor to perform line following and a 9-DOF IMU to navigate through sections without trackable lines. 
