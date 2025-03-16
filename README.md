@@ -40,7 +40,7 @@ The objective of the Romi robot is to navigate the game track, hitting each chec
 
 ![Romi Wiring Diagram](https://github.com/user-attachments/assets/e3bc8fe7-d673-4d7d-90d2-31c6a407f0b3)
 
-3. **Motor Characterization**: The motors we used were characterized reading from encoder.py and running them at various PWM.
+3. **Motor Characterization**: The motors we used were characterized reading from encoder.py and running them at various PWM. We implemented motor characterization for the ROMI by measuring each motor’s time constant, gain, and startup effort. We analyzed position and velocity step responses up to 70% PWM, confirming that one motor runs slightly faster in a straight line. This reinforced our hypothesis that we need a controller to be used for every ROMI movement command in order to maintain balanced, accurate control of the robot. We implemented control either through IMU-based heading correction or line-based using the infrared sensor feedback.
    
 <img width="545" alt="Screenshot 2025-03-16 at 2 44 07 PM" src="https://github.com/user-attachments/assets/0b1ea5cd-85fc-4f90-8878-692afc1c8530" />
 
@@ -74,7 +74,7 @@ The objective of the Romi robot is to navigate the game track, hitting each chec
 
 **Figure 8.** Linearized Step Responses for the Left Motor at Various PWM Efforts ranging from 10–70% Overlaid with a Global Best-Fit Line (τ ≈ 0.077 s) for the Motor Step Response Experiment. 
 
- 
+ **Discussion**: From the figures, both motors share similar dynamics but they have different velocity and slip. The right motor runs marginally faster at the same PWM and stops less smoothly, suggesting unequal friction or mechanical wear. These deviations highlight the need for closed-loop control that automatically corrects for motor-to-motor differences.
 
  
 
