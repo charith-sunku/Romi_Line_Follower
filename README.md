@@ -64,7 +64,16 @@ Each task runs at a different period and each task is assigned a priority. Some 
 ### Finite State Machine Diagrams
 Each task consists of several states that further subdivide the tasks into smaller operations. As each task is run, its current state is executed and updated based on the state of inter-task variables. This allows each task to execute operations efficiently and cede to other tasks as needed, allowing for cooperative multitasking. 
 
+***INSERT TASK DIAGRAM HERE***
+
 ### User Interaction Task
+This task handles the operation of the USER button to handle calibration and system startup. 
+***States***: 
+1. State 0 - Initializes interrupt for USER button attached to pin `PC13`. Prompts user to calibrate IR sensor on dark region.
+2. State 1 - Once button is pressed, increments `calibration` share to alert IR task to read sensor for calibrating dark surface. 
+3. State 2 - Once button is pressed, increments `calibration` share to alert IR task to read sensor for calibrating light surface. Prompts user that next button press will start Romi
+4. 
+
 ### Actuation Task
 ### IR Task
 ### Controller Task
