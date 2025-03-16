@@ -15,7 +15,7 @@ The objective of the Romi robot is to navigate the game track, hitting each chec
 ---
 ## Hardware Elements
 1. Polulu Romi Chassis Kit
-2. Polulu Power Distribution Board for Romi Chassis
+2. Polulu Motor Driver and Power Distribution Board for Romi Chassis
 3. Polulu Romi Pair Encoder Kit
 4. NUCELO-L476RG Development Board
 5. Shoe of Brian Carrier Baseboard (adds Micropython capability)
@@ -24,7 +24,8 @@ The objective of the Romi robot is to navigate the game track, hitting each chec
 
 ## Electro-Mechanical Design:
 1. **Hardware Mounting**: All sensors and control boards were mounted on laser-cut acrylic plates, using standoffs to secure each component at the correct height and orientation. This custom acrylic approach provided a sturdy yet lightweight frame to house the IR sensor array, IMU, and bump sensors in stable positions around the chassis. By carefully aligning the cut-outs, wiring was neatly routed, reducing potential interference or accidental disconnections. The modular nature of acrylic plates and standoffs also simplifies maintenance and future upgrades, as sensors can be repositioned or swapped without heavily modifying the robot’s overall structure.
-2. **
+2. **Electrical Wiring**: Power is supplied via a 6 × AA battery pack feeding a dedicated power distribution board. The motor drivers, NUCLEO microcontroller, and encoders all draw regulated voltage from this board, ensuring they receive stable, isolated power rails. This design isolates higher-current paths for the motors while providing a clean supply for sensitive components like sensors and the microcontroller, minimizing electrical noise and enhancing overall reliability. Below is a detailed wiring diagram highlighting the digital connections between the microcontroller and sensor peripherals.
+   
 
 ## Firmware Design
 1. **Hardware Drivers**: Each hardware component—motors, sensors, encoders, and the IMU—is managed by a dedicated driver that encapsulates the microcontroller’s low-level specifics (pin assignments, registers, timers, etc.). By providing clear, high-level methods, these drivers hide the intricate setup details from the rest of the codebase. This approach keeps the system modular and maintainable: if hardware pins or peripherals change, only the corresponding driver needs updating, while the rest of the application remains unaffected. It also streamlines debugging and testing, because each component’s functionality can be verified in isolation without juggling microcontroller minutiae in every part of the project.
