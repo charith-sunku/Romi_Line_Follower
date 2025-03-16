@@ -63,12 +63,15 @@ The objective of the Romi robot is to navigate the game track, hitting each chec
 **Figure 5.** Steady-State Velocity of Right Motor at PWM Step Input Ranging from 0-70% showing Motor Gain and Startup Effort 
 
 <img width="486" alt="Screenshot 2025-03-16 at 2 51 15 PM" src="https://github.com/user-attachments/assets/5fd8c64f-42b5-4e0d-bd6d-4b6901044f52" />
+
 **Figure 6.** Steady-State Velocity of Left Motor at PWM Step Input Ranging from 0-70% showing Motor Gain and Startup Effort 
 
 <img width="535" alt="Screenshot 2025-03-16 at 2 47 28 PM" src="https://github.com/user-attachments/assets/bead682e-726b-4d20-85d6-142150f10ccf" />
+
 **Figure 7.** Linearized Step Responses for the Right Motor at Various PWM Efforts ranging from 10–70% Overlaid with a Global Best-Fit Line (τ ≈ 0.074 s) for the Motor Step Response Experiment. 
 
 <img width="535" alt="Screenshot 2025-03-16 at 2 47 54 PM" src="https://github.com/user-attachments/assets/056e3095-c60b-40cf-94a2-c145ab76bcdb" />
+
 **Figure 8.** Linearized Step Responses for the Left Motor at Various PWM Efforts ranging from 10–70% Overlaid with a Global Best-Fit Line (τ ≈ 0.077 s) for the Motor Step Response Experiment. 
 
  
