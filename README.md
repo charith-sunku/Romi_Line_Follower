@@ -7,13 +7,14 @@
 3. [Electro-Mechanical Design](#electro-mechanical-design-overview)
 4. [Firmware Design](#firmware-design-overview)
 5. [Task Breakdown](#task-breakdown)
-   1. [Tasks and Shares](#tasks-and-shares)
-   2. [Finite State Machine Diagrams](#finite-state-machine-diagrams)
-   3. [User Interaction Task](#user-interaction-task)
-   4. [Actuation Task](#actuation-task)
-   5. [IR Task](#ir-task)
-   6. [Controller Task](#controller-task)
-   7. [Dead Reckoning Task](#dead-reckoning-task)
+   1. [Tasks](#tasks)
+   2. [Shares](#shares)
+   3. [Finite State Machine Diagrams](#finite-state-machine-diagrams)
+   4. [User Interaction Task](#user-interaction-task)
+   5. [Actuation Task](#actuation-task)
+   6. [IR Task](#ir-task)
+   7. [Controller Task](#controller-task)
+   8. [Dead Reckoning Task](#dead-reckoning-task)
 
 ## Project Objective
 The objective of the Romi robot is to navigate the game track, hitting each checkpoint in sequence. Before returning to chekpoint 6, the robot must interact with the wall in some capacity to acknowledge the wall's presence. Our solution was to use a IR reflectance sensor to perform line following and a 9-DOF IMU to navigate through sections without trackable lines. 
@@ -37,7 +38,7 @@ The objective of the Romi robot is to navigate the game track, hitting each chec
    
 2. **Electrical Wiring**: Power is supplied via a 6 × AA battery pack feeding a dedicated power distribution board. The motor drivers, NUCLEO microcontroller, and encoders all draw regulated voltage from this board, ensuring they receive stable, isolated power rails. This design isolates higher-current paths for the motors while providing a clean supply for sensitive components like sensors and the microcontroller, minimizing electrical noise and enhancing overall reliability. Below is a detailed wiring diagram highlighting the digital connections between the microcontroller and sensor peripherals.
 
-![Romi Wiring Diagram](https://github.com/user-attachments/assets/9cdc2165-dc94-408c-babd-3128b9f02dd3)
+![Romi Wiring Diagram](https://github.com/user-attachments/assets/e3bc8fe7-d673-4d7d-90d2-31c6a407f0b3)
 
 ## Firmware Design Overview
 1. **Hardware Drivers**: Each hardware component—motors, sensors, encoders, and the IMU—is managed by a dedicated driver that encapsulates the microcontroller’s low-level specifics (pin assignments, registers, timers, etc.). By providing clear, high-level methods, these drivers hide the intricate setup details from the rest of the codebase. This approach keeps the system modular and maintainable: if hardware pins or peripherals change, only the corresponding driver needs updating, while the rest of the application remains unaffected. It also streamlines debugging and testing, because each component’s functionality can be verified in isolation without juggling microcontroller minutiae in every part of the project.
@@ -56,10 +57,25 @@ To facilitate cooperative multitasking, the different hardware/software operatio
 4. Controller
 5. Dead Reckoning
 
-### Tasks and Shares
-Each task runs at a different period and each task is assigned a priority. Some tasks such as Actuation and IR must be run at higher frequencies as their hardaware needs to be manipulated more often. Tasks that are run more frequently are given a lower priority. This allows tasks that run at a lower frequency to take priority in case two tasks with different priorities are called simultaneously. Tasks are created by defining Python generator functions that represent each task. These functions are then used with the `cotask.py` module to create tasks with defined periods and priorities. The transfer of all inter-task variables is done with the `task_share.py`. This module creates `Share` objects that are passed into each task. Each task also has the ability to read and write to the Shares it has access to. Below is a task diagram showing the periods and priorities of each task. Additionally, the transfer of information through inter-task variables is also shown. 
+### Tasks
+Each task runs at a different period and each task is assigned a priority. Some tasks such as Actuation and IR must be run at higher frequencies as their hardaware needs to be manipulated more often. Tasks that are run more frequently are given a lower priority. This allows tasks that run at a lower frequency to take priority in case two tasks with different priorities are called simultaneously. Tasks are created by defining Python generator functions that represent each task. These functions are then used with the `cotask.py` module to create tasks with defined periods and priorities. Below is a task diagram showing the periods and priorities of each task. Additionally, the transfer of information through inter-task variables is also shown. 
 
 ***INSERT TASK DIAGRAM HERE***
+
+### Shares
+The transfer of all inter-task variables is done with the `task_share.py`. This module creates `Share` objects that are passed into each task. Each task also has the ability to read and write to the Shares it has access to. Using `Share` objects avoids the use of global variables as inter-task variables.
+
+| **Share Name**      | **Data Type** | **Description**                     |
+|---------------------|---------------|--------------------------------------|
+| `system_done`       | Unsigned Char| When set, this flag tells all tasks to stop operation and end system. |
+| `R_pwm_effort`      | Signed Float | PWM effort to be given to the right motor.|
+| `L_pwm_effort`      | Signed Float | PWM effort to be given to the left motor.|
+| `calibration`       | Signed Short | Flag controls the process of calibrating the IR sensor. When incremented to 3, calibration is complete.|
+| `centroid`          | Signed Float | Centroid of the IR sensor that indicates position of black line relative to IR array.|
+| `diamond`           | Signed Char  | Flag that controls start and end of diamond section of the track.|
+| `romi_heading`      | Signed Float | Heading of Romi relative to initial heading on startup, expressed as angled from -180 to 180|
+| `dr_mode`           | Unsigned Char| Flag that indicates beginning of dead reckonging IMU control section of the track.|
+
 
 ### Finite State Machine Diagrams
 Each task consists of several states that further subdivide the tasks into smaller operations. As each task is run, its current state is executed and updated based on the state of inter-task variables. This allows each task to execute operations efficiently and cede to other tasks as needed, allowing for cooperative multitasking. 
@@ -68,15 +84,39 @@ Each task consists of several states that further subdivide the tasks into small
 
 ### User Interaction Task
 This task handles the operation of the USER button to handle calibration and system startup. 
-***States***: 
+
+**States**: 
 1. State 0 - Initializes interrupt for USER button attached to pin `PC13`. Prompts user to calibrate IR sensor on dark region.
-2. State 1 - Once button is pressed, increments `calibration` share to alert IR task to read sensor for calibrating dark surface. 
-3. State 2 - Once button is pressed, increments `calibration` share to alert IR task to read sensor for calibrating light surface. Prompts user that next button press will start Romi
-4. 
+2. State 1 - Once button is pressed, increments `calibration` share to alert IR task to read sensor for calibrating dark surface. When button is pressed agian, increments `calibration` share to alert IR task to read sensor for calibrating light surface. Prompts user that next button press will start Romi
+3. State 2 - When button is pressed, `calibration` share is incremented to inform other tasks that IR sensor calibration is complete.
+4. State 3 - When button is pressed, `system_done` flag is set. This notifies other tasks that the system is stopping and all tasks will cease operations on their next call.
+5. State 4 - Idle state after system stops.
 
 ### Actuation Task
+This task handles the operation of the encoders and motors to set the motor efforts and update the encoder periodically.
+
+**States**: 
+1. State 0 - Initialization state where motors are enabled.
+2. State 1 - Check `system_done` flag status. If set, disable motors and set motor PWM effort to 0. If IR calibration is complete (`calibration = 3`) and dead reckoning mode has not begun yet, then update left and right encoders and set motor PWM based on the `R_pwm_effort` and `L_pwm_effort` shares. These shares are set by the controller task to change the motor PWM.
+3. State 2 - Idle state after system stops. 
+
 ### IR Task
+This task handles the operation of the IR sensor to calibrate the sensor and read the centroid of the sensor.
+
+**States**: 
+1. State 0 - Disables IR sensor to conserve power. 
+2. State 1 - If `calibration` reads 1, read the state of the IR sensor and save it as the `darkValue`. Prints collected `darkValue` to user.
+3. State 2 - If `calibration` reads 2, read the state of the IR sensor and save it as the `lightValue`. Prints collected `lightValue` to user.
+4. State 3 - If `calibration` reads 3 (fully complete), then update the IR sensor value and update the `centroid` share with the new IR sensor values.
+5. State 4 - Idle state after system stops
+   
 ### Controller Task
+This task is the control system that ensures the Romi stays on the line during the line following sections. The controller uses the center sensor 7 of the IR array as the reference value for the controller. The measured value for the controller's closed loop feedback is the current centroid of the IR sensor. The centroid represents the point on the IR array that reads the darkest. Based on the centroid, a motor PWM is calculated for the left and right motors. Additionally, this task checks for when Romi has reached the diamond section of the course. When Romi's heading readches ~90°, the controller changes dynamically to use the IMU heading of 90° as the new reference and IMU Euler angles as the measured value. This dynamic swap between line following and IMU heading control is to allow fr more aggressive line following. The more aggressive line follower is not capable of completing the sharp diamond turns due to Romi moving too fast to make corrections. With IMU heading control, we bypass the diamond section by driving straight through it and continuing with line following after.
+
+**States**: 
+1. State 0 - Waits for IR calibration to complete then initializes the `motor_controller` object.
+2. State 1 - 
+
 ### Dead Reckoning Task
 ---
 
