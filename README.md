@@ -101,7 +101,7 @@ Each task runs at a different period and each task is assigned a priority. Some 
 ***INSERT TASK DIAGRAM HERE***
 
 ### Shares
-The transfer of all inter-task variables is done with the `task_share.py`. This module creates `Share` objects that are passed into each task. Each task also has the ability to read and write to the Shares it has access to. Using `Share` objects avoids the use of global variables as inter-task variables.
+The transfer of all inter-task variables is done with the `task_share.py`. This module allows the creation `Share` objects that are passed into each task. Each task also has the ability to read and write to the Shares it has access to. Using `Share` objects avoids the use of global variables as inter-task variables.
 
 | **Share Name**      | **Data Type** | **Description**                     |
 |---------------------|---------------|--------------------------------------|
@@ -125,9 +125,13 @@ This task handles the operation of the USER button to handle calibration and sys
 
 **States**: 
 1. State 0 - Initializes interrupt for USER button attached to pin `PC13`. Prompts user to calibrate IR sensor on dark region.
+
 2. State 1 - Once button is pressed, increments `calibration` share to alert IR task to read sensor for calibrating dark surface. When button is pressed agian, increments `calibration` share to alert IR task to read sensor for calibrating light surface. Prompts user that next button press will start Romi
+
 3. State 2 - When button is pressed, `calibration` share is incremented to inform other tasks that IR sensor calibration is complete.
+
 4. State 3 - When button is pressed, `system_done` flag is set. This notifies other tasks that the system is stopping and all tasks will cease operations on their next call.
+
 5. State 4 - Idle state after system stops.
 
 ### Actuation Task
@@ -135,7 +139,9 @@ This task handles the operation of the encoders and motors to set the motor effo
 
 **States**: 
 1. State 0 - Initialization state where motors are enabled.
+
 2. State 1 - Check `system_done` flag status. If set, disable motors and set motor PWM effort to 0. If IR calibration is complete (`calibration = 3`) and dead reckoning mode has not begun yet, then update left and right encoders and set motor PWM based on the `R_pwm_effort` and `L_pwm_effort` shares. These shares are set by the controller task to change the motor PWM.
+
 3. State 2 - Idle state after system stops. 
 
 ### IR Task
@@ -143,9 +149,13 @@ This task handles the operation of the IR sensor to calibrate the sensor and rea
 
 **States**: 
 1. State 0 - Disables IR sensor to conserve power. 
+
 2. State 1 - If `calibration` reads 1, read the state of the IR sensor and save it as the `darkValue`. Prints collected `darkValue` to user.
+
 3. State 2 - If `calibration` reads 2, read the state of the IR sensor and save it as the `lightValue`. Prints collected `lightValue` to user.
+
 4. State 3 - If `calibration` reads 3 (fully complete), then update the IR sensor value and update the `centroid` share with the new IR sensor values.
+
 5. State 4 - Idle state after system stops
    
 ### Controller Task
@@ -153,7 +163,9 @@ This task is the control system that ensures the Romi stays on the line during t
 
 **States**: 
 1. State 0 - Waits for IR calibration to complete then initializes the `motor_controller` object.
+
 2. State 1 - Update Romi's heading using the IMU. If diamond has not passed, check if heading is ~90°. If it is, record encoder position and set the `diamond` flag. If Romi is in `diamond_mode` use IMU proportional control for a set amount of wheel rotations. If `diamond_mode` is not enabled, revert to PI control using the IR sensor.
+
 3. State 2 - Idle state after system stops
 
 ### Dead Reckoning Task
@@ -174,9 +186,7 @@ This task handles the robot’s navigation through regions where it must follow 
      - **Rotate** to a specific heading (0°, -90°, 180°, etc.)  
      - **Drive** forward for a set distance at that heading  
      - Repeat until the full route around the obstacle is complete  
-   - Each sub-step uses encoders to measure distance and the IMU to confirm heading accuracy. Once finished, sets `system_done` to indicate the robot is done moving.
+   - Each sub-step uses encoders to measure distance and the IMU to confirm heading accuracy. Once the finish point is reached, sets `system_done` to indicate the robot is done moving.
 
 6. **State 99** - Idle state after system stops
-
----
 
