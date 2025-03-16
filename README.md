@@ -12,9 +12,8 @@ The objective of the Romi robot is to navigate the game track, hitting each chec
 
 ![Annotated Game Track](https://github.com/user-attachments/assets/ff8461aa-9a42-4708-82e6-f4fdfe3421d9)
 
-**Link to project:** [http://example.com/line-follower-demo](http://example.com/line-follower-demo)
 
-**Link to Video of Demo:** [Romi Demo Video](https://youtu.be/yved8C4mFfU)
+[Romi Demo Video](https://youtu.be/yved8C4mFfU)
 
 
 
@@ -30,6 +29,7 @@ The objective of the Romi robot is to navigate the game track, hitting each chec
 
 ## Electro-Mechanical Design:
 1. **Hardware Mounting**: All sensors and control boards were mounted on laser-cut acrylic plates, using standoffs to secure each component at the correct height and orientation. This custom acrylic approach provided a sturdy yet lightweight frame to house the IR sensor array, IMU, and bump sensors in stable positions around the chassis. By carefully aligning the cut-outs, wiring was neatly routed, reducing potential interference or accidental disconnections. The modular nature of acrylic plates and standoffs also simplifies maintenance and future upgrades, as sensors can be repositioned or swapped without heavily modifying the robot’s overall structure.
+   
 2. **Electrical Wiring**: Power is supplied via a 6 × AA battery pack feeding a dedicated power distribution board. The motor drivers, NUCLEO microcontroller, and encoders all draw regulated voltage from this board, ensuring they receive stable, isolated power rails. This design isolates higher-current paths for the motors while providing a clean supply for sensitive components like sensors and the microcontroller, minimizing electrical noise and enhancing overall reliability. Below is a detailed wiring diagram highlighting the digital connections between the microcontroller and sensor peripherals.
 
 ![Romi Wiring Diagram](https://github.com/user-attachments/assets/9cdc2165-dc94-408c-babd-3128b9f02dd3)
@@ -43,5 +43,25 @@ The objective of the Romi robot is to navigate the game track, hitting each chec
    
 4. **Cooperative Multitasking**: The system is organized into distinct tasks—such as IR sensor readings, motor control, and user interaction—each running in a cooperative scheduler (via cotask.py and task_share.py). Rather than use a traditional preemptive RTOS, this approach allows each task to execute sequentially, yielding control back to the scheduler when finished. As a result, the robot remains responsive while the codebase stays modular, making it easier to debug individual tasks and manage shared data without complex thread-synchronization overhead.
 
+## Task Breakdown
+To facilitate cooperative multitasking, the different hardware/software operations of Romi were split into different tasks. Each task in charge of operating a different aspect of the system. Our design has 6 tasks:
+1. User Interaction
+2. Actuation
+3. IR
+4. Controller
+5. Dead Reckoning
+
+### Task Diagrams
+Each task runs at a different period and each task is assigned a priority. Some tasks such as Actuation and IR must be run at higher frequencies as their hardaware needs to be manipulated more often. Tasks that are run more frequently are given a lower priority. This allows tasks that run at a lower frequency to take run in case two tasks are called simultaneously. Tasks are created by defining Python generator functions that represent each task. These functions are then used with the <code>`cotask.py`</code> module to create tasks with defined periods and priorities. Below is a task diagram showing the periods and priorities of each task. Additionally, the transfer of information through inter-task variables is also shown. The share of all inter-task variables is done with the <code>`task_share.py`</code>. This module creates <code>`Share`</code> objects that are passed into each task. Each task has the ability to read and write to the Shares it has access to. 
+
+***INSERT TASK DIAGRAM HERE***
+
+### Finite State Machine Diagrams
+Each task consists of several states that further subdivide the tasks into smaller operations. As each task is run, its current state is executed and updated based on the state of the system. This allows each task to execute operations and cede priority to other tasks as needed, allowing for cooperative multitasking. 
+### User Interaction Task
+### Actuation Task
+### IR Task
+### Controller Task
+### Dead Reckoning Task
 ---
 
