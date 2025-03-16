@@ -40,6 +40,35 @@ The objective of the Romi robot is to navigate the game track, hitting each chec
 
 ![Romi Wiring Diagram](https://github.com/user-attachments/assets/e3bc8fe7-d673-4d7d-90d2-31c6a407f0b3)
 
+3. **Motor Characterization**: The motors we used were characterized reading from encoder.py and running them at various PWM.
+<img width="545" alt="Screenshot 2025-03-16 at 2 44 07 PM" src="https://github.com/user-attachments/assets/0b1ea5cd-85fc-4f90-8878-692afc1c8530" />
+**Figure 1.** Step Response of Right Motor Position comparing PWM values ranging from 0-70% 
+
+<img width="545" alt="Screenshot 2025-03-16 at 2 44 32 PM" src="https://github.com/user-attachments/assets/b819427d-9bf0-4717-9bfa-c96f700bb643" />
+**Figure 2.** Step Response of Left Motor Position comparing PWM values ranging from 0-70% 
+
+<img width="545" alt="Screenshot 2025-03-16 at 2 44 50 PM" src="https://github.com/user-attachments/assets/accba3bf-fdf2-4bb9-9973-dc39e970cf11" />
+**Figure 3.** Step Response of Right Motor Velocity comparing PWM values ranging from 0-70% 
+
+<img width="545" alt="Screenshot 2025-03-16 at 2 45 38 PM" src="https://github.com/user-attachments/assets/ce891e6a-a171-4bb1-bdba-bd71bd6a3354" />
+**Figure 4.** Step Response of Left Motor Velocity comparing PWM values ranging from 0-70% 
+
+<img width="492" alt="Screenshot 2025-03-16 at 2 46 10 PM" src="https://github.com/user-attachments/assets/7b4d431a-87fd-4c20-94b2-3d13cc7b84df" />
+**Figure 5.** Steady-State Velocity of Right Motor at PWM Step Input Ranging from 0-70% showing Motor Gain and Startup Effort 
+
+![image](https://github.com/user-attachments/assets/59066775-565a-4ad6-8435-9c45657f5200)
+**Figure 6.** Steady-State Velocity of Left Motor at PWM Step Input Ranging from 0-70% showing Motor Gain and Startup Effort 
+
+<img width="535" alt="Screenshot 2025-03-16 at 2 47 28 PM" src="https://github.com/user-attachments/assets/bead682e-726b-4d20-85d6-142150f10ccf" />
+**Figure 7.** Linearized Step Responses for the Right Motor at Various PWM Efforts ranging from 10–70% Overlaid with a Global Best-Fit Line (τ ≈ 0.074 s) for the Motor Step Response Experiment. 
+
+<img width="535" alt="Screenshot 2025-03-16 at 2 47 54 PM" src="https://github.com/user-attachments/assets/056e3095-c60b-40cf-94a2-c145ab76bcdb" />
+**Figure 8.** Linearized Step Responses for the Left Motor at Various PWM Efforts ranging from 10–70% Overlaid with a Global Best-Fit Line (τ ≈ 0.077 s) for the Motor Step Response Experiment. 
+
+ 
+
+ 
+
 ## Firmware Design Overview
 1. **Hardware Drivers**: Each hardware component—motors, sensors, encoders, and the IMU—is managed by a dedicated driver that encapsulates the microcontroller’s low-level specifics (pin assignments, registers, timers, etc.). By providing clear, high-level methods, these drivers hide the intricate setup details from the rest of the codebase. This approach keeps the system modular and maintainable: if hardware pins or peripherals change, only the corresponding driver needs updating, while the rest of the application remains unaffected. It also streamlines debugging and testing, because each component’s functionality can be verified in isolation without juggling microcontroller minutiae in every part of the project.
    
