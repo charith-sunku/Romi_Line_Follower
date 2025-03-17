@@ -49,42 +49,49 @@ The objective of the Romi robot is to navigate the game track, hitting each chec
 ![Romi Wiring Diagram](https://github.com/user-attachments/assets/e3bc8fe7-d673-4d7d-90d2-31c6a407f0b3)
 
 3. **Motor Characterization**: The motors we used were characterized reading from encoder.py and running them at various PWM. We implemented motor characterization for the ROMI by measuring each motor’s time constant, gain, and startup effort. We analyzed position and velocity step responses up to 70% PWM, confirming that one motor runs slightly faster in a straight line. This reinforced our hypothesis that we need a controller to be used for every ROMI movement command in order to maintain balanced, accurate control of the robot. We implemented control either through IMU-based heading correction or line-based using the infrared sensor feedback.
-   
-<img width="545" alt="Screenshot 2025-03-16 at 2 44 07 PM" src="https://github.com/user-attachments/assets/0b1ea5cd-85fc-4f90-8878-692afc1c8530" />
 
-**Figure 1.** Step Response of Right Motor Position comparing PWM values ranging from 0-70% 
+<p align="center">
+  <img width="545" alt="Screenshot 2025-03-16 at 2 44 07 PM" src="https://github.com/user-attachments/assets/0b1ea5cd-85fc-4f90-8878-692afc1c8530" />
+   <figcaption style="text-align: center;">Figure 1. Step Response of Right Motor Position comparing PWM values ranging from 0-70% </figcaption>
+</p>
 
-<img width="545" alt="Screenshot 2025-03-16 at 2 44 32 PM" src="https://github.com/user-attachments/assets/b819427d-9bf0-4717-9bfa-c96f700bb643" />
+<p align="center">
+  <img width="545" alt="Screenshot 2025-03-16 at 2 44 32 PM" src="https://github.com/user-attachments/assets/b819427d-9bf0-4717-9bfa-c96f700bb643" />
+   <figcaption style="text-align: center;">Figure 2. Step Response of Left Motor Position comparing PWM values ranging from 0-70% </figcaption>
+</p>
 
-**Figure 2.** Step Response of Left Motor Position comparing PWM values ranging from 0-70% 
+<p align="center">
+  <img width="545" alt="Screenshot 2025-03-16 at 2 44 50 PM" src="https://github.com/user-attachments/assets/accba3bf-fdf2-4bb9-9973-dc39e970cf11" />
+   <figcaption style="text-align: center;">Figure 3. Step Response of Right Motor Velocity comparing PWM values ranging from 0-70% </figcaption>
+</p>
 
-<img width="545" alt="Screenshot 2025-03-16 at 2 44 50 PM" src="https://github.com/user-attachments/assets/accba3bf-fdf2-4bb9-9973-dc39e970cf11" />
+<p align="center">
+  <img width="545" alt="Screenshot 2025-03-16 at 2 45 38 PM" src="https://github.com/user-attachments/assets/ce891e6a-a171-4bb1-bdba-bd71bd6a3354" />
+   <figcaption style="text-align: center;">Figure 4. Step Response of Left Motor Velocity comparing PWM values ranging from 0-70%  </figcaption>
+</p>
 
-**Figure 3.** Step Response of Right Motor Velocity comparing PWM values ranging from 0-70% 
+<p align="center">
+  <img width="492" alt="Screenshot 2025-03-16 at 2 46 10 PM" src="https://github.com/user-attachments/assets/7b4d431a-87fd-4c20-94b2-3d13cc7b84df" />
+   <figcaption style="text-align: center;">Figure 5. Steady-State Velocity of Right Motor at PWM Step Input Ranging from 0-70% showing Motor Gain and Startup Effort</figcaption>
+</p>
 
-<img width="545" alt="Screenshot 2025-03-16 at 2 45 38 PM" src="https://github.com/user-attachments/assets/ce891e6a-a171-4bb1-bdba-bd71bd6a3354" />
+<p align="center">
+  <img width="486" alt="Screenshot 2025-03-16 at 2 51 15 PM" src="https://github.com/user-attachments/assets/5fd8c64f-42b5-4e0d-bd6d-4b6901044f52" />
+   <figcaption style="text-align: center;">Figure 6. Steady-State Velocity of Left Motor at PWM Step Input Ranging from 0-70% showing Motor Gain and Startup Effort</figcaption>
+</p> 
 
-**Figure 4.** Step Response of Left Motor Velocity comparing PWM values ranging from 0-70% 
+<p align="center">
+  <img width="535" alt="Screenshot 2025-03-16 at 2 47 28 PM" src="https://github.com/user-attachments/assets/bead682e-726b-4d20-85d6-142150f10ccf" />
+   <figcaption style="text-align: center;">Figure 7. Linearized Step Responses for the Right Motor at Various PWM Efforts ranging from 10–70% Overlaid with a Global Best-Fit Line (τ ≈ 0.074 s) for the Motor Step Response Experiment. </figcaption>
+</p>
 
-<img width="492" alt="Screenshot 2025-03-16 at 2 46 10 PM" src="https://github.com/user-attachments/assets/7b4d431a-87fd-4c20-94b2-3d13cc7b84df" />
+<p align="center">
+  <img width="535" alt="Screenshot 2025-03-16 at 2 47 54 PM" src="https://github.com/user-attachments/assets/056e3095-c60b-40cf-94a2-c145ab76bcdb" />
+   <figcaption style="text-align: center;">Figure 8. Linearized Step Responses for the Left Motor at Various PWM Efforts ranging from 10–70% Overlaid with a Global Best-Fit Line (τ ≈ 0.077 s) for the Motor Step Response Experiment. </figcaption>
+</p>
 
-**Figure 5.** Steady-State Velocity of Right Motor at PWM Step Input Ranging from 0-70% showing Motor Gain and Startup Effort 
+From the figures, both motors share similar dynamics but they have different velocity and slip. The right motor runs marginally faster at the same PWM and stops less smoothly, suggesting unequal friction or mechanical wear. These deviations highlight the need for closed-loop control that automatically corrects for motor-to-motor differences.
 
-<img width="486" alt="Screenshot 2025-03-16 at 2 51 15 PM" src="https://github.com/user-attachments/assets/5fd8c64f-42b5-4e0d-bd6d-4b6901044f52" />
-
-**Figure 6.** Steady-State Velocity of Left Motor at PWM Step Input Ranging from 0-70% showing Motor Gain and Startup Effort 
-
-<img width="535" alt="Screenshot 2025-03-16 at 2 47 28 PM" src="https://github.com/user-attachments/assets/bead682e-726b-4d20-85d6-142150f10ccf" />
-
-**Figure 7.** Linearized Step Responses for the Right Motor at Various PWM Efforts ranging from 10–70% Overlaid with a Global Best-Fit Line (τ ≈ 0.074 s) for the Motor Step Response Experiment. 
-
-<img width="535" alt="Screenshot 2025-03-16 at 2 47 54 PM" src="https://github.com/user-attachments/assets/056e3095-c60b-40cf-94a2-c145ab76bcdb" />
-
-**Figure 8.** Linearized Step Responses for the Left Motor at Various PWM Efforts ranging from 10–70% Overlaid with a Global Best-Fit Line (τ ≈ 0.077 s) for the Motor Step Response Experiment. 
-
- **Discussion**: From the figures, both motors share similar dynamics but they have different velocity and slip. The right motor runs marginally faster at the same PWM and stops less smoothly, suggesting unequal friction or mechanical wear. These deviations highlight the need for closed-loop control that automatically corrects for motor-to-motor differences.
-
- 
 
 ## Firmware Design Overview
 1. **Hardware Drivers**: Each hardware component—motors, sensors, encoders, and the IMU—is managed by a dedicated driver that encapsulates the microcontroller’s low-level specifics (pin assignments, registers, timers, etc.). By providing clear, high-level methods, these drivers hide the intricate setup details from the rest of the codebase. This approach keeps the system modular and maintainable: if hardware pins or peripherals change, only the corresponding driver needs updating, while the rest of the application remains unaffected. It also streamlines debugging and testing, because each component’s functionality can be verified in isolation without juggling microcontroller minutiae in every part of the project.
