@@ -237,7 +237,6 @@ def Controller_Task(shares):
     V_Romulus = 28  # Base PWM value for line following.
     system_done, calibration, R_pwm_effort, L_pwm_effort, centroid, romi_heading = shares
     state = 0
-    motor_controller = Controller(reference_value=7, KP=0.22, KI=0.08, KD=0, dt = 0.012)
     diamond_mode = False
     diamond_start = 0
     diamond = 0
@@ -245,9 +244,12 @@ def Controller_Task(shares):
         if system_done.get():
             state = 3
         if state == 0:
+            motor_controller = Controller(reference_value=7, KP=0.22, KI=0.08, KD=0, dt = 0.012)
+            state = 1
+        if state == 1:
             if calibration.get() == 3:
-                state = 1
-        elif state == 1:
+                state = 2
+        elif state == 2:
 # =============================================================================
 #             # Check IMU heading; if near 90, trigger diamond mode.
 # =============================================================================
