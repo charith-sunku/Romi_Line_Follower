@@ -294,12 +294,6 @@ The transfer of all inter-task variables is done with the `task_share.py`. This 
 | `romi_heading`      | Signed Float | Heading of Romi relative to initial heading on startup, expressed as angled from -180 to 180|
 | `dr_mode`           | Unsigned Char| Flag that indicates beginning of dead reckonging IMU control section of the track.|
 
-
-### Finite State Machine Diagrams
-Each task consists of several states that further subdivide the tasks into smaller operations. As each task is run, its current state is executed and updated based on the state of inter-task variables. This allows each task to execute operations efficiently and cede to other tasks as needed, allowing for cooperative multitasking. 
-
-FINITE STATE MACHINES GO HEREEE
-
 ### User Interaction Task
 This task handles the operation of the USER button to handle calibration and system startup. 
 
@@ -314,6 +308,8 @@ This task handles the operation of the USER button to handle calibration and sys
 
 5. State 4 - Idle state after system stops.
 
+![image](https://github.com/user-attachments/assets/c220540a-39db-4084-a04a-dda16078dd52)
+
 ### Actuation Task
 This task handles the operation of the encoders and motors to set the motor efforts and update the encoder periodically.
 
@@ -323,6 +319,8 @@ This task handles the operation of the encoders and motors to set the motor effo
 2. State 1 - Check `system_done` flag status. If set, disable motors and set motor PWM effort to 0. If IR calibration is complete (`calibration = 3`) and dead reckoning mode has not begun yet, then update left and right encoders and set motor PWM based on the `R_pwm_effort` and `L_pwm_effort` shares. These shares are set by the controller task to change the motor PWM.
 
 3. State 2 - Idle state after system stops. 
+
+![image](https://github.com/user-attachments/assets/76867168-8537-44bf-a398-adcd0fe22fc2)
 
 ### IR Task
 This task handles the operation of the IR sensor to calibrate the sensor and read the centroid of the sensor.
@@ -337,7 +335,9 @@ This task handles the operation of the IR sensor to calibrate the sensor and rea
 4. State 3 - If `calibration` reads 3 (fully complete), then update the IR sensor value and update the `centroid` share with the new IR sensor values.
 
 5. State 4 - Idle state after system stops
-   
+
+![image](https://github.com/user-attachments/assets/f70ced16-5fbd-4e02-b187-40161f4bc8fa)
+
 ### Controller Task
 This task is the control system that ensures the Romi stays on the line during the line following sections. The controller uses the center sensor 7 of the IR array as the reference value for the controller. The measured value for the controller's closed loop feedback is the current centroid of the IR sensor. The centroid represents the point on the IR array that reads the darkest. Based on the centroid, a motor PWM is calculated for the left and right motors. Additionally, this task checks for when Romi has reached the diamond section of the course. When Romi's heading readches ~90°, the controller changes dynamically to use the IMU heading of 90° as the new reference and IMU Euler angles as the measured value. This dynamic swap between line following and IMU heading control is to allow fr more aggressive line following. The more aggressive line follower is not capable of completing the sharp diamond turns due to Romi moving too fast to make corrections. With IMU heading control, we bypass the diamond section by driving straight through it and continuing with line following after.
 
@@ -348,9 +348,9 @@ This task is the control system that ensures the Romi stays on the line during t
 
 3. State 2 - Idle state after system stops
 
+![image](https://github.com/user-attachments/assets/988802fc-47d3-4999-a5ca-1cb1c329d96d)
+
 ### Dead Reckoning Task
-![IMG_C95C771905B3-1](https://github.com/user-attachments/assets/7670ec14-9862-42ec-a179-661777ecb11c)
-**Figure 10.** Dead Reckoning Finite State Machine
 
 This task handles the robot’s navigation through regions where it must follow pre-planned routes and rotate to specific headings, rather than relying on line following. It uses both the **IMU** (for heading feedback) and **encoders** (for distance tracking) to achieve precise movements. If the robot encounters an obstacle, bump sensors trigger an override sequence that redirects the robot around the wall.
 
@@ -372,4 +372,6 @@ This task handles the robot’s navigation through regions where it must follow 
    - Each sub-step uses encoders to measure distance and the IMU to confirm heading accuracy. Once the finish point is reached, sets `system_done` to indicate the robot is done moving.
 
 6. **State 99** - Idle state after system stops
+
+![IMG_C95C771905B3-1](https://github.com/user-attachments/assets/7670ec14-9862-42ec-a179-661777ecb11c)
 
