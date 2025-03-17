@@ -309,14 +309,6 @@ def DeadReckoning_Task(shares):
     fwd_pwm = 50
     heading_threshold = 4  # degrees tolerance
 
-    # Calibrate sensor using manual coefficients if provided.
-    if MANUAL_CALIB_COEFFS is not None:
-        if len(MANUAL_CALIB_COEFFS) == 22:
-            imu.set_calibration_coefficients(MANUAL_CALIB_COEFFS)
-            print("Manual calibration coefficients applied.")
-        else:
-            print("Error: Calibration data must be 22 bytes long. Not applying manual calibration.")
-
     # Define route segments for dead reckoning pre bump.
     # Zone 4: Grid navigation (e.g. heading 180).
     # Zone 5: Wall segment with bump override (e.g. heading -90, marked with "bump").
@@ -340,10 +332,19 @@ def DeadReckoning_Task(shares):
 # =============================================================================
         if state < 10:
             if state == 0:
+                # Calibrate sensor using manual coefficients if provided.
+                if MANUAL_CALIB_COEFFS is not None:
+                    if len(MANUAL_CALIB_COEFFS) == 22:
+                        imu.set_calibration_coefficients(MANUAL_CALIB_COEFFS)
+                        print("Manual calibration coefficients applied.")
+                    else:
+                        print("Error: Calibration data must be 22 bytes long. Not applying manual calibration.")
+                state = 1
+            elif state == 1:
                 if calibration.get() == 3:
                     state = 1
                     imu.set_offset()  # Set the reference offset once
-            elif state == 1:
+            elif state == 2:
                 # Wait until encoder positions exceed thresholds to start DR,
                 # measured through test runs and averaged
                 if encR.get_position() > 96 and encL.get_position() > 106:
@@ -351,8 +352,8 @@ def DeadReckoning_Task(shares):
                     # Move based on route segments.
                     print("DR Engaged: Encoder pos exceed chkpt4")
                     dr_mode.put(1)
-                    state = 2
-            elif state == 2:
+                    state = 3
+            elif state == 3:
                 # Rotation state: rotate to the target heading.
                 if segment_index < len(route_segments):
                     target_heading = route_segments[segment_index]["heading"]
@@ -362,7 +363,7 @@ def DeadReckoning_Task(shares):
                         mot_L.set_effort(0)
                         encL.update()
                         move_start_len = encL.get_position()
-                        state = 3  # Proceed to straight drive state.
+                        state = 4  # Proceed to straight drive state.
                     else:
                         if error < 0:  # Turn right.
                             mot_L.set_effort(turning_pwm)
@@ -372,7 +373,7 @@ def DeadReckoning_Task(shares):
                             mot_R.set_effort(turning_pwm)
                 else:
                     state = 99  # All segments done enter idle state.
-            elif state == 3:
+            elif state == 4:
                 # Straight drive state: Uses heading correction from IMU
                 move_encoder_rads = route_segments[segment_index]["move_encoder_rads"]
                 target_heading = route_segments[segment_index]["heading"]
@@ -397,7 +398,7 @@ def DeadReckoning_Task(shares):
                     mot_R.set_effort(0)
                     mot_L.set_effort(0)
                     segment_index += 1
-                    state = 1  # Transition to rotation for the next segment.
+                    state = 2  # Transition to rotation for the next segment.
             elif state == 99:
                 mot_R.set_effort(0)
                 mot_L.set_effort(0)
