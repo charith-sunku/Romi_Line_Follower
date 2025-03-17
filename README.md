@@ -87,6 +87,172 @@ The objective of the Romi robot is to navigate the game track, hitting each chec
    
 4. **Cooperative Multitasking**: The system is organized into distinct tasks—such as IR sensor readings, motor control, and user interaction—each running in a cooperative scheduler (via cotask.py and task_share.py). Rather than use a traditional preemptive RTOS, this approach allows each task to execute sequentially, yielding control back to the scheduler when finished. As a result, the robot remains responsive while the codebase stays modular, making it easier to debug individual tasks and manage shared data without complex thread-synchronization overhead.
 
+## Hardware Drivers
+### BNO055
+The `BNO055` driver is designed to interface with the BNO055 sensor over I2C using the `pyb` module. It handles sensor initialization, data acquisition (e.g., Euler angles and gyroscope data), calibration management, and heading correction.
+
+**Initialization and Setup**
+- **`__init__(self, i2c, address=0x28)`**  
+  - Initializes the sensor with a given I2C instance.
+  - Reads and verifies the CHIP_ID against an expected value.
+  - Sets the sensor to CONFIGMODE for configuration, then switches to NDOF_MODE.
+  - Initializes a heading offset to zero.
+
+**Private Register Access Methods**
+- `_read_register(self, reg, nbytes=1)`: Reads a specified number of bytes starting from a given register.
+- `_write_register(self, reg, data)`: Writes data (integer or bytearray) to a specified register.
+
+**Mode Management and Calibration**
+- `set_mode(self, mode)`: Updates the sensor’s operating mode by writing to the OPR_MODE register, with a delay to allow the mode change.
+- `get_calibration_status(self)`: Reads the calibration status byte and parses it into individual components for the system, gyro, accelerometer, and magnetometer.
+- `get_calibration_coefficients(self)`: Retrieves 22 bytes of calibration data from the sensor.
+- `set_calibration_coefficients(self, coeffs)`: Writes a 22-byte calibration dataset back to the sensor. Raises a `ValueError` if the provided data is not 22 bytes long.
+
+**Data Acquisition Methods**
+- `read_euler_angles(self)`: Reads raw Euler angle data (currently implemented for heading) from the sensor. Converts the raw two-byte data into a heading using a scale factor.
+- `read_angular_velocity(self)`: Reads 6 bytes of gyroscope data and converts them to angular velocity values (x, y, z) using an example scale factor.
+
+**Heading Correction and Error Computation**
+- `set_offset(self)`: Captures the current heading to use as an offset for subsequent corrections.
+- `get_corrected_heading(self)`: Returns the heading corrected by subtracting the stored offset and normalizing it to the 0°–360° range.
+- `compute_heading_error(self, target_heading)`: Computes the minimal angular error between the corrected heading and a target heading, yielding a value in the range -180° to +180°.
+
+### Motor
+The `Motor` driver is designed to interface with motor controllers using separate PWM and direction signals via the `pyb` module. It provides methods for motor initialization, effort control, and power management.
+
+**Initialization and Setup**
+- `__init__(self, PWM, DIR, nSLP, TimerChannel)`
+  - Initializes the Motor object by configuring the sleep (nSLP) and direction (DIR) pins.
+  - Sets up Timer 1 at a 20 kHz frequency and initializes a PWM channel on the specified timer channel with an initial pulse width of 0%.
+  - Initializes the motor's effort to zero.
+
+**Effort Control**
+- `set_effort(self, effort)`
+  - Sets the motor's effort (speed/torque) based on an input value between -100 and 100.
+  - For negative values:
+    - Sets the motor direction to reverse.
+    - Saturates the effort at -45 to avoid slipping
+  - For positive values:
+    - Sets the motor direction to forward.
+    - Caps the effort at 45.
+  - For zero effort:
+    - Stops the motor by setting the PWM duty cycle to 0.
+- `get_effort(self)`
+  - Returns the current motor effort value.
+
+**Power Management**
+- `enable(self)`
+  - Enables the motor driver by setting the sleep (nSLP) pin high (taking it out of sleep mode).
+  - Resets the PWM duty cycle to 0.
+- `disable(self)`
+  - Disables the motor driver by setting the sleep (nSLP) pin low (putting it into sleep mode).
+  - Stops PWM output by setting the duty cycle to 0 and deinitializes the timer.
+
+### Encoder
+The `Encoder` driver provides a quadrature encoder decoding interface using a hardware timer and GPIO pins. It tracks the encoder's position, computes velocity, and handles counter overflow/underflow for accurate angular measurement.
+
+**Initialization and Setup**
+- `__init__(self, tim, chA_pin, chB_pin)`  
+  - Initializes the encoder with a specified timer and channel pins for A and B.
+  - Configures Timer channels in quadrature encoder mode (`ENC_AB`).
+  - Sets up internal state variables including position, previous counter, delta and dt buffers.
+  - Defines a conversion factor to translate encoder counts to radians.
+
+**Update and Data Processing**
+- `update(self)`  
+  - Retrieves the current timer count and current time in microseconds.
+  - Calculates the difference in counts from the previous update, adjusting for counter overflow/underflow.
+  - Updates rolling buffers for delta counts and time intervals.
+  - Computes an average delta from the buffer and updates the total accumulated position.
+
+**Position and Velocity Retrieval**
+- `get_position(self)`  
+  - Returns the current encoder position converted to radians using the conversion factor.
+- `get_velocity(self)`  
+  - Calculates the average time interval and position change from the buffers.
+  - Returns the angular velocity in radians per second based on the averaged delta and time difference.
+- `get_time(self)`  
+  - Returns the timestamp of the last update in seconds.
+- `get_dt(self)`  
+  - Returns the time difference between the last two updates in seconds.
+
+**Resetting the Encoder**
+- `zero(self)`  
+  - Resets the accumulated encoder position to zero.
+  - Updates the reference counter to the current timer counter for future measurements.
+
+### IR Sensor Driver
+The IR sensor module provides two classes to handle infrared sensing: `IR_Single` for interfacing with a single IR sensor via ADC, and `IR_Array` for managing an array of IR sensors with calibration, normalization, and centroid computation functionalities.
+
+**IR_Single**
+- **Initialization and Setup**
+  - `__init__(self, pin, index)`  
+    - Configures the specified pin as an input and sets up an ADC for the sensor.
+    - Assigns an index identifier and initializes an empty list for storing sensor values.
+- **Data Acquisition**
+  - `getADC(self)`  
+    - Returns the ADC object associated with the sensor.
+  - `getValue(self)`  
+    - Reads and returns the current ADC value from the IR sensor.
+
+**IR_Array**
+- **Initialization and Setup**
+  - `__init__(self, irPinList, evenPin, oddPin)`  
+    - Instantiates an `IR_Single` object for each pin in the provided list, building the sensor array.
+    - Sets up two control pins (`evenPin` and `oddPin`) for sensor enabling (dimming control is noted but not implemented).
+    - Initializes internal variables for raw and normalized sensor values, calibration data (dark and light values), and the centroid.
+- **Data Acquisition and Normalization**
+  - `readArray(self)`  
+    - Enables the sensor array, pauses briefly, then reads raw ADC values from each sensor before disabling the array.
+  - `normalize(self)`  
+    - Converts raw sensor readings into normalized values between 0 and 1 using pre-calibrated dark and light reference values.
+- **Sensor Update and Data Retrieval**
+  - `updateIR(self)`  
+    - Combines reading and normalization steps to update the sensor array and returns the list of normalized values.
+  - `getList(self)`  
+    - Returns the current list of normalized sensor readings.
+  - `getCentroid(self)`  
+    - Computes a weighted average (centroid) of the sensor readings, useful for determining the sensor array’s overall response.
+- **Calibration**
+  - `calibrateDark(self)`  
+    - Captures and sets the dark calibration values based on sensor readings.
+  - `calibrateLight(self)`  
+    - Captures and sets the light calibration values based on sensor readings.
+- **Sensor Control**
+  - `enable(self)`  
+    - Activates the sensor array by setting the control pins high.
+  - `disable(self)`  
+    - Deactivates the sensor array by setting the control pins low.
+
+### Bump Sensor Driver
+The Bump sensor module provides two classes to manage bump sensor inputs using interrupts: `Bumpy` for handling individual bump sensors and `Bumpies` for aggregating multiple bump sensors.
+
+**Bumpy**
+- **Initialization and Setup**
+  - **`__init__(self, Bump_Pin)`**  
+    - Initializes the bump sensor on the specified pin configured as an input with no pull.
+    - Attaches an interrupt on the falling edge (with a pull-up configuration) that calls the `bump_interrupt` method.
+    - Initializes an internal flag (`HIT`) to track whether a bump event has occurred.
+- **Event Handling and Status**
+  - **`bump_interrupt(self, line)`**  
+    - Interrupt callback that sets the `HIT` flag to `True` when a bump is detected.
+  - **`reset_status(self)`**  
+    - Resets the `HIT` flag to `False`.
+  - **`get_status(self)`**  
+    - Returns the current state of the `HIT` flag (i.e., whether a bump event has been registered).
+
+**Bumpies**
+- **Initialization and Setup**
+  - **`__init__(self, Pin_List)`**  
+    - Creates a list of `Bumpy` objects, one for each pin provided in `Pin_List`.
+- **Aggregated Sensor State**
+  - **`get_status(self)`**  
+    - Iterates through all bump sensors and returns `True` if any sensor's `HIT` flag is set.
+- **Status Reset**
+  - **`reset_status(self)`**  
+    - Resets the status of all bump sensors by calling each sensor's `reset_status` method.
+
+
 ## Task Breakdown
 To facilitate cooperative multitasking, the different hardware/software operations of Romi were split into different tasks. Each task in charge of operating a different aspect of the system. Our design has 6 tasks:
 1. User Interaction
@@ -96,7 +262,7 @@ To facilitate cooperative multitasking, the different hardware/software operatio
 5. Dead Reckoning
 
 ### Tasks
-Each task runs at a different period and each task is assigned a priority. Some tasks such as Actuation and IR must be run at higher frequencies as their hardaware needs to be manipulated more often. Tasks that are run more frequently are given a lower priority. This allows tasks that run at a lower frequency to take priority in case two tasks with different priorities are called simultaneously. Tasks are created by defining Python generator functions that represent each task. These functions are then used with the `cotask.py` module to create tasks with defined periods and priorities. Below is a task diagram showing the periods and priorities of each task. Additionally, the transfer of information through inter-task variables is also shown. 
+Each task runs at a different period and each task is assigned a priority. Some tasks such as Actuation and IR must be run at higher frequencies as their hardaware needs to be manipulated more often. Tasks that are run more frequently are given a lower priority. This allows tasks that run at a lower frequency to take priority in case two tasks with different priorities are called simultaneously. Tasks are created by defining Python generator functions that represent each task. These functions are then used with the `cotask.py` scheduler module to create tasks with defined periods and priorities. Below is a task diagram showing the periods and priorities of each task. Additionally, the transfer of information through inter-task variables is also shown. 
 
 ***INSERT TASK DIAGRAM HERE***
 
