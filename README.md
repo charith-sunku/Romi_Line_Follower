@@ -290,7 +290,7 @@ The transfer of all inter-task variables is done with the `task_share.py`. This 
 ### Finite State Machine Diagrams
 Each task consists of several states that further subdivide the tasks into smaller operations. As each task is run, its current state is executed and updated based on the state of inter-task variables. This allows each task to execute operations efficiently and cede to other tasks as needed, allowing for cooperative multitasking. 
 
-***INSERT TASK DIAGRAM HERE***
+![Screenshot 2025-03-16 at 5 17 39 PM copy](https://github.com/user-attachments/assets/366e5886-b5d8-4ce1-abc7-32593f01f9a6)
 
 ### User Interaction Task
 This task handles the operation of the USER button to handle calibration and system startup. 
