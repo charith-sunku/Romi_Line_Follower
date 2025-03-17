@@ -282,7 +282,6 @@ The transfer of all inter-task variables is done with the `task_share.py`. This 
 | `L_pwm_effort`      | Signed Float | PWM effort to be given to the left motor.|
 | `calibration`       | Signed Short | Flag controls the process of calibrating the IR sensor. When incremented to 3, calibration is complete.|
 | `centroid`          | Signed Float | Centroid of the IR sensor that indicates position of black line relative to IR array.|
-| `diamond`           | Signed Char  | Flag that controls start and end of diamond section of the track.|
 | `romi_heading`      | Signed Float | Heading of Romi relative to initial heading on startup, expressed as angled from -180 to 180|
 | `dr_mode`           | Unsigned Char| Flag that indicates beginning of dead reckonging IMU control section of the track.|
 
