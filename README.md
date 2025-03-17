@@ -270,7 +270,7 @@ To facilitate cooperative multitasking, the different hardware/software operatio
 ### Tasks
 Each task runs at a different period and each task is assigned a priority. Some tasks such as Actuation and IR must be run at higher frequencies as their hardaware needs to be manipulated more often. Tasks that are run more frequently are given a lower priority. This allows tasks that run at a lower frequency to take priority in case two tasks with different priorities are called simultaneously. Tasks are created by defining Python generator functions that represent each task. These functions are then used with the `cotask.py` scheduler module to create tasks with defined periods and priorities. Below is a task diagram showing the periods and priorities of each task. Additionally, the transfer of information through inter-task variables is also shown. 
 
-***INSERT TASK DIAGRAM HERE***
+![Screenshot 2025-03-16 at 5 17 39 PM copy](https://github.com/user-attachments/assets/366e5886-b5d8-4ce1-abc7-32593f01f9a6)
 
 ### Shares
 The transfer of all inter-task variables is done with the `task_share.py`. This module allows the creation `Share` objects that are passed into each task. Each task also has the ability to read and write to the Shares it has access to. Using `Share` objects avoids the use of global variables as inter-task variables.
@@ -290,7 +290,7 @@ The transfer of all inter-task variables is done with the `task_share.py`. This 
 ### Finite State Machine Diagrams
 Each task consists of several states that further subdivide the tasks into smaller operations. As each task is run, its current state is executed and updated based on the state of inter-task variables. This allows each task to execute operations efficiently and cede to other tasks as needed, allowing for cooperative multitasking. 
 
-![Screenshot 2025-03-16 at 5 17 39 PM copy](https://github.com/user-attachments/assets/366e5886-b5d8-4ce1-abc7-32593f01f9a6)
+FINITE STATE MACHINES GO HEREEE
 
 ### User Interaction Task
 This task handles the operation of the USER button to handle calibration and system startup. 
