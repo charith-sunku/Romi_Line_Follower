@@ -349,6 +349,9 @@ This task is the control system that ensures the Romi stays on the line during t
 3. State 2 - Idle state after system stops
 
 ### Dead Reckoning Task
+![IMG_C95C771905B3-1](https://github.com/user-attachments/assets/7670ec14-9862-42ec-a179-661777ecb11c)
+**Figure 10.** Dead Reckoning Finite State Machine
+
 This task handles the robot’s navigation through regions where it must follow pre-planned routes and rotate to specific headings, rather than relying on line following. It uses both the **IMU** (for heading feedback) and **encoders** (for distance tracking) to achieve precise movements. If the robot encounters an obstacle, bump sensors trigger an override sequence that redirects the robot around the wall.
 
 **States**:
