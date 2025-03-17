@@ -190,7 +190,7 @@ The `Encoder` driver provides a quadrature encoder decoding interface using a ha
   - Resets the accumulated encoder position to zero.
   - Updates the reference counter to the current timer counter for future measurements.
 
-### IR Sensor Driver
+### IR Sensor
 The IR sensor module provides two classes to handle infrared sensing: `IR_Single` for interfacing with a single IR sensor via ADC, and `IR_Array` for managing an array of IR sensors with calibration, normalization, and centroid computation functionalities.
 
 **IR_Single**
@@ -233,7 +233,7 @@ The IR sensor module provides two classes to handle infrared sensing: `IR_Single
   - `disable(self)`  
     - Deactivates the sensor array by setting the control pins low.
 
-### Bump Sensor Driver
+### Bump Sensor
 The Bump sensor module provides two classes to manage bump sensor inputs using interrupts: `Bumpy` for handling individual bump sensors and `Bumpies` for aggregating multiple bump sensors.
 
 **Bumpy**
