@@ -1,6 +1,8 @@
 #  Romi Line-Following Robot
 **By Charith Sunku and Tomas Franco**
 
+![PXL_20250316_065143888 PORTRAIT ORIGINAL](https://github.com/user-attachments/assets/045846bd-f86a-4751-b22d-7ce1975a69ec)
+
 ## Table of Contents
 1. [Project Objective](#project-objective)
 2. [Hardware Elements](#hardware-elements)
